@@ -6,6 +6,6 @@ export default function handleProfileSignup(firstName, lastName, fileName) {
     .allSettled([signUpUser(firstName, lastName), uploadPhoto(fileName)])
     .then((res) => res.map((obj) => ({
       status: obj.status,
-      value: obj.status === 'fulfilled' ? obj.status : obj.reason,
+      value: obj.status === 'fulfilled' ? obj.value : obj.reason,
     })));
 }
