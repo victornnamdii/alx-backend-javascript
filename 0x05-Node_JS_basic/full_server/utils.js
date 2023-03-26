@@ -1,49 +1,36 @@
-import fs from 'fs';
-
 /**
- * Reads the data of students in a CSV data file.
- * @param {String} dataPath The path to the CSV data file.
- * @author Bezaleel Olakunori <https://github.com/B3zaleel>
- * @returns {Promise<{
- *   String: {firstname: String, lastname: String, age: number}[]
- * }>}
+ * Hold
  */
-const readDatabase = (dataPath) => new Promise((resolve, reject) => {
-  if (!dataPath) {
-    reject(new Error('Cannot load the database'));
-  }
-  if (dataPath) {
-    fs.readFile(dataPath, (err, data) => {
-      if (err) {
-        reject(new Error('Cannot load the database'));
-      }
-      if (data) {
-        const fileLines = data
-          .toString('utf-8')
-          .trim()
-          .split('\n');
-        const studentGroups = {};
-        const dbFieldNames = fileLines[0].split(',');
-        const studentPropNames = dbFieldNames
-          .slice(0, dbFieldNames.length - 1);
 
-        for (const line of fileLines.slice(1)) {
-          const studentRecord = line.split(',');
-          const studentPropValues = studentRecord
-            .slice(0, studentRecord.length - 1);
-          const field = studentRecord[studentRecord.length - 1];
-          if (!Object.keys(studentGroups).includes(field)) {
-            studentGroups[field] = [];
-          }
-          const studentEntries = studentPropNames
-            .map((propName, idx) => [propName, studentPropValues[idx]]);
-          studentGroups[field].push(Object.fromEntries(studentEntries));
-        }
-        resolve(studentGroups);
+const fs = require('fs');
+
+function readDatabase(path) {
+  const dataPromise = new Promise((resolve, reject) => {
+    fs.readFile(path, 'utf-8', (error, data) => {
+      if (error) {
+        reject(error);
       }
+      const studentArray = data.trim().split('\n').slice(1);
+
+      const students = studentArray.map((student) => {
+        const info = student.replace('\r', '').split(',');
+        return info;
+      });
+
+      const fields = [...new Set(students.map((student) => student[student.length - 1]))];
+
+      const fieldStudentDictionary = {};
+
+      fields.forEach((field) => {
+        const filteredStudents = students.filter((student) =>
+          student[student.length - 1] === field
+        ).map((student) => student[0]);
+        fieldStudentDictionary[field] = filteredStudents;
+      });
+      resolve(fieldStudentDictionary);
     });
-  }
-});
+  });
+  return dataPromise;
+};
 
-export default readDatabase;
 module.exports = readDatabase;
